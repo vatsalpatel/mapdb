@@ -14,6 +14,7 @@ func setupFlags(port *int) {
 func main() {
 	var port int
 	setupFlags(&port)
+
 	s := server.NewTCPAsyncServer(port)
 	s.Start()
 	defer s.Stop()
