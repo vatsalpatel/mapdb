@@ -7,7 +7,8 @@ import (
 )
 
 type TCPSyncServer struct {
-	Port int
+	Port     int
+	listener net.Listener
 }
 
 func NewTCPAsyncServer(port int) *TCPSyncServer {
@@ -37,13 +38,14 @@ func (s *TCPSyncServer) handle(conn net.Conn) {
 }
 
 func (s *TCPSyncServer) Start() error {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
+	var err error
+	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
 	if err != nil {
 		return err
 	}
-	defer listener.Close()
+	defer s.Stop()
 	for {
-		conn, err := listener.Accept()
+		conn, err := s.listener.Accept()
 		defer conn.Close()
 		log.Println("client connected", conn.RemoteAddr())
 		if err != nil {
@@ -55,5 +57,5 @@ func (s *TCPSyncServer) Start() error {
 }
 
 func (s *TCPSyncServer) Stop() error {
-	return nil
+	return s.listener.Close()
 }
