@@ -10,7 +10,7 @@ type TCPSyncServer struct {
 	Port int
 }
 
-func NewTCPSyncServer(port int) *TCPSyncServer {
+func NewTCPAsyncServer(port int) *TCPSyncServer {
 	return &TCPSyncServer{
 		Port: port,
 	}
