@@ -103,7 +103,7 @@ func TestSerialize(t *testing.T) {
 		{errors.New("Error message"), []byte("-Error message\r\n")},
 	}
 	for tc := range testCases {
-		actual, _ := core.Serialize(testCases[tc].input)
+		actual := core.Serialize(testCases[tc].input)
 		assert.Equal(t, testCases[tc].expected, actual)
 	}
 }

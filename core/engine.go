@@ -6,7 +6,7 @@ import (
 
 type IEngine interface {
 	store.Storer
-	Execute([]byte) ([]byte, error)
+	Execute([]byte) []byte
 }
 
 type Engine struct {
@@ -19,6 +19,18 @@ func NewEngine(store store.Storer) *Engine {
 	}
 }
 
-func (e *Engine) Execute(input []byte) ([]byte, error) {
-	return []byte("+OK\r\n"), nil
+func (e *Engine) Execute(input []byte) []byte {
+	deserialized, err := DeserializeArray(input)
+	if err != nil {
+		return Serialize(err)
+	}
+	command := &Command{
+		Cmd:  deserialized[0].(string),
+		Args: deserialized[1:],
+	}
+	result, err := command.Execute()
+	if err != nil {
+		return Serialize(err)
+	}
+	return Serialize(result)
 }

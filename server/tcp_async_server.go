@@ -56,11 +56,7 @@ func (s *TCPSyncServer) handle(conn net.Conn) {
 			return
 		}
 
-		resp, err := s.IEngine.Execute(buf)
-		if err != nil {
-			log.Println("Error executing command:", err)
-			resp = []byte("-ERR\r\n")
-		}
+		resp := s.IEngine.Execute(buf)
 
 		_, err = conn.Write(resp)
 		if err != nil {

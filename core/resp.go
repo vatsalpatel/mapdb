@@ -27,6 +27,11 @@ func Deserialize(input []byte) (any, int, error) {
 	}
 }
 
+func DeserializeArray(input []byte) ([]any, error) {
+	result, _, err := readArray(input)
+	return result, err
+}
+
 func readLength(input []byte) (int, int) {
 	pos, length := 1, 0
 	for ; input[pos] != '\r'; pos++ {
@@ -94,7 +99,7 @@ func readError(input []byte) (string, int, error) {
 	return readSimpleString(input)
 }
 
-func Serialize(input any) ([]byte, error) {
+func Serialize(input any) []byte {
 	var builder strings.Builder
 	switch input.(type) {
 	case []byte:
@@ -110,12 +115,8 @@ func Serialize(input any) ([]byte, error) {
 		data := input.([]any)
 		builder.WriteString("*" + fmt.Sprintf("%v\r\n", len(data)))
 		for _, item := range data {
-			serialized, err := Serialize(item)
-			if err != nil {
-				return nil, err
-			}
-			builder.Write(serialized)
+			builder.Write(Serialize(item))
 		}
 	}
-	return []byte(builder.String()), nil
+	return []byte(builder.String())
 }
