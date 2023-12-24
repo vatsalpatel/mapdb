@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,6 +84,26 @@ func TestError(t *testing.T) {
 	}
 	for tc := range testCases {
 		actual, _, _ := core.Deserialize(testCases[tc].input)
+		assert.Equal(t, testCases[tc].expected, actual)
+	}
+}
+
+func TestSerialize(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		input    any
+		expected []byte
+	}{
+		{"OK", []byte("+OK\r\n")},
+		{"PONG", []byte("+PONG\r\n")},
+		{[]byte("foobar"), []byte("$6\r\nfoobar\r\n")},
+		{[]byte{}, []byte("$0\r\n\r\n")},
+		{[]any{[]byte("foo"), []byte("bar"), 22}, []byte("*3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n:22\r\n")},
+		{[]any{}, []byte("*0\r\n")},
+		{errors.New("Error message"), []byte("-Error message\r\n")},
+	}
+	for tc := range testCases {
+		actual, _ := core.Serialize(testCases[tc].input)
 		assert.Equal(t, testCases[tc].expected, actual)
 	}
 }
