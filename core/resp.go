@@ -2,6 +2,8 @@ package core
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 )
 
 func Deserialize(input []byte) (any, int, error) {
@@ -34,24 +36,24 @@ func readLength(input []byte) (int, int) {
 	return length, pos + 2
 }
 
-func readSimpleString(input []byte) ([]byte, int, error) {
+func readSimpleString(input []byte) (string, int, error) {
 	pos := 1
 	str := make([]byte, 0)
 	for ; input[pos] != '\r'; pos++ {
 		str = append(str, input[pos])
 	}
-	return str, pos + 2, nil
+	return string(str), pos + 2, nil
 }
 
-func readBulkString(input []byte) ([]byte, int, error) {
+func readBulkString(input []byte) (string, int, error) {
 	length, delta := readLength(input)
 	if length < 0 {
-		return nil, delta, nil
+		return "", delta, nil
 	}
 
 	str := make([]byte, length)
 	copy(str, input[delta:delta+length])
-	return str, delta + length + 2, nil
+	return string(str), delta + length + 2, nil
 }
 
 func readInteger(input []byte) (int, int, error) {
@@ -88,10 +90,32 @@ func readArray(input []byte) ([]any, int, error) {
 	return arr, 0, nil
 }
 
-func readError(input []byte) ([]byte, int, error) {
+func readError(input []byte) (string, int, error) {
 	return readSimpleString(input)
 }
 
-func serialize(any any) ([]byte, error) {
-	return nil, nil
+func Serialize(input any) ([]byte, error) {
+	var builder strings.Builder
+	switch input.(type) {
+	case []byte:
+		data := input.([]byte)
+		builder.WriteString("$" + fmt.Sprintf("%v\r\n", len(data)) + string(data) + "\r\n")
+	case string:
+		builder.WriteString("+" + fmt.Sprintf("%v\r\n", input))
+	case int:
+		builder.WriteString(":" + fmt.Sprintf("%v\r\n", input))
+	case error:
+		builder.WriteString("-" + fmt.Sprintf("%v\r\n", input))
+	case []any:
+		data := input.([]any)
+		builder.WriteString("*" + fmt.Sprintf("%v\r\n", len(data)))
+		for _, item := range data {
+			serialized, err := Serialize(item)
+			if err != nil {
+				return nil, err
+			}
+			builder.Write(serialized)
+		}
+	}
+	return []byte(builder.String()), nil
 }
