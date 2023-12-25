@@ -32,7 +32,6 @@ func (s *TCPSyncServer) Start() error {
 	for {
 		conn, err := s.listener.Accept()
 		defer conn.Close()
-		log.Println("client connected", conn.RemoteAddr())
 		if err != nil {
 			log.Printf("Error accepting connection: %v", err)
 			continue
@@ -49,7 +48,6 @@ func (s *TCPSyncServer) handle(conn net.Conn) {
 	buf := make([]byte, 1024)
 	for {
 		_, err := conn.Read(buf[:])
-		log.Println("received", string(buf))
 		if err != nil {
 			conn.Close()
 			log.Printf("Client disconnected: %v", conn.RemoteAddr())
