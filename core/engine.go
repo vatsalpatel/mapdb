@@ -6,20 +6,20 @@ import (
 
 type IEngine interface {
 	store.Storer
-	Execute([]byte) []byte
+	Handle([]byte) []byte
 }
 
 type Engine struct {
 	store.Storer
 }
 
-func NewEngine(store store.Storer) *Engine {
+func NewEngine(storage store.Storer) *Engine {
 	return &Engine{
-		store,
+		storage,
 	}
 }
 
-func (e *Engine) Execute(input []byte) []byte {
+func (e *Engine) Handle(input []byte) []byte {
 	deserialized, err := DeserializeArray(input)
 	if err != nil {
 		return Serialize(err)
@@ -28,7 +28,7 @@ func (e *Engine) Execute(input []byte) []byte {
 		Cmd:  deserialized[0].(string),
 		Args: deserialized[1:],
 	}
-	result, err := command.Execute()
+	result, err := e.execute(command)
 	if err != nil {
 		return Serialize(err)
 	}

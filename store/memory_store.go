@@ -18,8 +18,10 @@ func (ms *MemoryStore) Get(key string) any {
 	return (*ms.store)[key]
 }
 
-func (ms *MemoryStore) Delete(key string) {
+func (ms *MemoryStore) Delete(key string) bool {
+	isDeleted := ms.Exists(key)
 	delete(*ms.store, key)
+	return isDeleted
 }
 
 func (ms *MemoryStore) Exists(key string) bool {

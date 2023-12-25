@@ -26,10 +26,12 @@ func (ms *ThreadSafeMemoryStore) Get(key string) any {
 	return (*ms.store)[key]
 }
 
-func (ms *ThreadSafeMemoryStore) Delete(key string) {
+func (ms *ThreadSafeMemoryStore) Delete(key string) bool {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
+	isDeleted := ms.Exists(key)
 	delete(*ms.store, key)
+	return isDeleted
 }
 
 func (ms *ThreadSafeMemoryStore) Exists(key string) bool {
