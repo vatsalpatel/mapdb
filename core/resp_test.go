@@ -12,11 +12,11 @@ func TestSimleString(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		input    []byte
-		expected []byte
+		expected string
 	}{
-		{[]byte("+OK\r\n"), []byte("OK")},
-		{[]byte("+PONG\r\n"), []byte("PONG")},
-		{[]byte("+\r\n"), []byte("")},
+		{[]byte("+OK\r\n"), "OK"},
+		{[]byte("+PONG\r\n"), "PONG"},
+		{[]byte("+\r\n"), ""},
 	}
 	for tc := range testCases {
 		actual, _, _ := core.Deserialize(testCases[tc].input)
@@ -28,10 +28,10 @@ func TestBulkString(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		input    []byte
-		expected []byte
+		expected string
 	}{
-		{[]byte("$6\r\nfoobar\r\n"), []byte("foobar")},
-		{[]byte("$0\r\n\r\n"), []byte{}},
+		{[]byte("$6\r\nfoobar\r\n"), "foobar"},
+		{[]byte("$0\r\n\r\n"), ""},
 	}
 	for tc := range testCases {
 		actual, _, _ := core.Deserialize(testCases[tc].input)
@@ -45,9 +45,10 @@ func TestArray(t *testing.T) {
 		input    []byte
 		expected []interface{}
 	}{
-		{[]byte("*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n"), []any{[]byte("foo"), []byte("bar")}},
+		{[]byte("*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n"), []any{"foo", "bar"}},
 		{[]byte("*0\r\n"), []any{}},
-		{[]byte("*4\r\n:1\r\n:2\r\n+qwe\r\n$6\r\nfoobar\r\n"), []any{1, 2, []byte("qwe"), []byte("foobar")}},
+		{[]byte("*4\r\n:1\r\n:2\r\n+qwe\r\n$6\r\nfoobar\r\n"), []any{1, 2, "qwe", "foobar"}},
+		{[]byte("*3\r\n$3\r\nSET\r\n$1\r\na\r\n$2\r\n22\r\n"), []any{"SET", "a", "22"}},
 	}
 	for tc := range testCases {
 		actual, _, err := core.Deserialize(testCases[tc].input)
@@ -77,10 +78,10 @@ func TestError(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		input    []byte
-		expected []byte
+		expected string
 	}{
-		{[]byte("-Error message\r\n"), []byte("Error message")},
-		{[]byte("-\r\n"), []byte{}},
+		{[]byte("-Error message\r\n"), "Error message"},
+		{[]byte("-\r\n"), ""},
 	}
 	for tc := range testCases {
 		actual, _, _ := core.Deserialize(testCases[tc].input)
@@ -100,6 +101,7 @@ func TestSerialize(t *testing.T) {
 		{[]byte{}, []byte("$0\r\n\r\n")},
 		{[]any{[]byte("foo"), []byte("bar"), 22}, []byte("*3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n:22\r\n")},
 		{[]any{}, []byte("*0\r\n")},
+		{[]any{[]byte("SET"), []byte("a"), []byte("22")}, []byte("*3\r\n$3\r\nSET\r\n$1\r\na\r\n$2\r\n22\r\n")},
 		{errors.New("Error message"), []byte("-Error message\r\n")},
 	}
 	for tc := range testCases {

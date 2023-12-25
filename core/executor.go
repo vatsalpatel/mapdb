@@ -70,7 +70,11 @@ func (e *Engine) execGet(args ...any) (any, error) {
 	if !ok {
 		return nil, ErrWrongTypeOfArgs
 	}
-	return e.Storer.Get(key), nil
+	value := e.Storer.Get(key)
+	if value == nil {
+		value = "<nil>"
+	}
+	return value, nil
 }
 
 func (e *Engine) execDelete(args ...any) (int, error) {
