@@ -17,7 +17,7 @@ func main() {
 	var port int
 	setupFlags(&port)
 
-	storage := store.NewMemory()
+	storage := store.NewThreadSafeMemory()
 	engine := core.NewEngine(storage)
 	s := server.NewTCPAsyncServer(port, engine)
 	s.Start()
