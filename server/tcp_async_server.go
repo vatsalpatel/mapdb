@@ -56,7 +56,7 @@ func (s *TCPSyncServer) handle(conn net.Conn) {
 			return
 		}
 
-		resp := s.IEngine.Execute(buf)
+		resp := s.IEngine.Handle(buf)
 
 		_, err = conn.Write(resp)
 		if err != nil {
