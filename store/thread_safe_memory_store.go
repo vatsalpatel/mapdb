@@ -2,41 +2,41 @@ package store
 
 import "sync"
 
-type ThreadSafeMemoryStore struct {
+type ThreadSafeMemoryStore[T any] struct {
 	mu    *sync.RWMutex
-	store *map[string]any
+	store map[string]T
 }
 
-func NewThreadSafeMemory() *ThreadSafeMemoryStore {
-	return &ThreadSafeMemoryStore{
+func NewThreadSafeMemory[T any]() *ThreadSafeMemoryStore[T] {
+	return &ThreadSafeMemoryStore[T]{
 		mu:    &sync.RWMutex{},
-		store: &map[string]any{},
+		store: map[string]T{},
 	}
 }
 
-func (ms *ThreadSafeMemoryStore) Put(key string, value any) {
+func (ms *ThreadSafeMemoryStore[T]) Put(key string, value T) {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
-	(*ms.store)[key] = value
+	ms.store[key] = value
 }
 
-func (ms *ThreadSafeMemoryStore) Get(key string) any {
+func (ms *ThreadSafeMemoryStore[T]) Get(key string) T {
 	ms.mu.RLock()
 	defer ms.mu.RUnlock()
-	return (*ms.store)[key]
+	return ms.store[key]
 }
 
-func (ms *ThreadSafeMemoryStore) Delete(key string) bool {
+func (ms *ThreadSafeMemoryStore[T]) Delete(key string) bool {
 	isDeleted := ms.Exists(key)
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
-	delete(*ms.store, key)
+	delete(ms.store, key)
 	return isDeleted
 }
 
-func (ms *ThreadSafeMemoryStore) Exists(key string) bool {
+func (ms *ThreadSafeMemoryStore[T]) Exists(key string) bool {
 	ms.mu.RLock()
 	defer ms.mu.RUnlock()
-	_, ok := (*ms.store)[key]
+	_, ok := ms.store[key]
 	return ok
 }

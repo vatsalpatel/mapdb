@@ -8,7 +8,7 @@ import (
 )
 
 func TestThreadSafeMemoryStore(t *testing.T) {
-	ms := store.NewThreadSafeMemory()
+	ms := store.NewThreadSafeMemory[any]()
 	ms.Put("foo", "bar")
 	assert.Equal(t, ms.Get("foo"), "bar")
 	assert.Equal(t, ms.Exists("foo"), true)
