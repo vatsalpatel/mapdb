@@ -103,6 +103,7 @@ func TestSerialize(t *testing.T) {
 		{[]any{}, []byte("*0\r\n")},
 		{[]any{[]byte("SET"), []byte("a"), []byte("22")}, []byte("*3\r\n$3\r\nSET\r\n$1\r\na\r\n$2\r\n22\r\n")},
 		{errors.New("Error message"), []byte("-Error message\r\n")},
+		{float64(123), []byte("-ERR invalid type\r\n")},
 	}
 	for tc := range testCases {
 		actual := core.Serialize(testCases[tc].input)

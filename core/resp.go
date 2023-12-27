@@ -117,6 +117,9 @@ func Serialize(input any) []byte {
 		for _, item := range data {
 			builder.Write(Serialize(item))
 		}
+	default:
+		builder.WriteString("-" + fmt.Sprintf("%v\r\n", "ERR invalid type"))
 	}
+
 	return []byte(builder.String())
 }
