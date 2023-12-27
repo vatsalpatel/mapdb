@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +26,10 @@ func (e *Engine) execute(cmd *Command) (any, error) {
 		return e.execDelete(cmd.Args...)
 	case "EXISTS":
 		return e.execExists(cmd.Args...)
+	case "EXPIRE":
+		return e.execExpire(cmd.Args...)
+	case "TTL":
+		return e.execTTL(cmd.Args...)
 	default:
 		return nil, errors.New("Err unsuported command")
 	}
@@ -62,7 +65,6 @@ func (e *Engine) execEcho(args ...any) (any, error) {
 }
 
 func (e *Engine) execSet(args ...any) (any, error) {
-	log.Println(args, len(args), len(args) != 2, len(args) != 3)
 	if len(args) != 2 && len(args) != 3 {
 		return nil, ErrWrongNumberOfArgs
 	}
@@ -142,4 +144,42 @@ func (e *Engine) execExists(args ...any) (int, error) {
 		}
 	}
 	return count, nil
+}
+
+func (e *Engine) execExpire(args ...any) (int, error) {
+	if len(args) != 2 {
+		return 0, ErrWrongNumberOfArgs
+	}
+	key, ok := args[0].(string)
+	if !ok {
+		return 0, ErrWrongTypeOfArgs
+	}
+	item, exists := e.getItem(key)
+	if exists == false {
+		return 0, nil
+	}
+	expiry, err := strconv.ParseInt(args[1].(string), 10, 64)
+	if err != nil {
+		return 0, ErrWrongTypeOfArgs
+	}
+	item.expiry = time.Now().UnixMilli() + expiry*1000
+	return 1, nil
+}
+
+func (e *Engine) execTTL(args ...any) (int, error) {
+	if len(args) != 1 {
+		return 0, ErrWrongNumberOfArgs
+	}
+	key, ok := args[0].(string)
+	if !ok {
+		return 0, ErrWrongTypeOfArgs
+	}
+	item, exists := e.getItem(key)
+	if exists == false {
+		return -2, nil
+	}
+	if item.expiry == -1 {
+		return -1, nil
+	}
+	return int(item.expiry-time.Now().UnixMilli()) / 1000, nil
 }
