@@ -5,15 +5,20 @@ import (
 )
 
 type IEngine interface {
-	store.Storer
+	store.Storer[*Item]
 	Handle([]byte) []byte
 }
 
 type Engine struct {
-	store.Storer
+	store.Storer[*Item]
 }
 
-func NewEngine(storage store.Storer) *Engine {
+type Item struct {
+	value  any
+	expiry int64
+}
+
+func NewEngine(storage store.Storer[*Item]) *Engine {
 	return &Engine{
 		storage,
 	}

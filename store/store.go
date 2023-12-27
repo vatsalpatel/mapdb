@@ -1,8 +1,8 @@
 package store
 
-type Storer interface {
-	Put(string, any)
-	Get(string) any
+type Storer[T any] interface {
+	Put(string, T)
+	Get(string) T
 	Delete(string) bool
 	Exists(string) bool
 }

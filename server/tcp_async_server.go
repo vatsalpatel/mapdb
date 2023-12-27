@@ -50,7 +50,6 @@ func (s *TCPSyncServer) handle(conn net.Conn) {
 		_, err := conn.Read(buf[:])
 		if err != nil {
 			conn.Close()
-			log.Printf("Client disconnected: %v", conn.RemoteAddr())
 			return
 		}
 
@@ -59,7 +58,6 @@ func (s *TCPSyncServer) handle(conn net.Conn) {
 		_, err = conn.Write(resp)
 		if err != nil {
 			conn.Close()
-			log.Printf("Client disconnected: %v", conn.RemoteAddr())
 			return
 		}
 	}
