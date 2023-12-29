@@ -80,6 +80,7 @@ func (e *Engine) execSet(args ...any) (any, error) {
 		if err != nil {
 			return nil, ErrWrongTypeOfArgs
 		}
+		expiry = time.Now().UnixMilli() + expiry*1000
 	}
 
 	oldItem, exists := e.getItem(key)
@@ -90,7 +91,7 @@ func (e *Engine) execSet(args ...any) (any, error) {
 
 	e.Storer.Put(key, &Item{
 		value:  args[1],
-		expiry: time.Now().UnixMilli() + expiry*1000,
+		expiry: expiry,
 	})
 
 	return oldValue, nil
