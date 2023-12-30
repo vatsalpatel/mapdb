@@ -10,6 +10,7 @@ import (
 var (
 	ErrWrongNumberOfArgs = errors.New("ERR wrong number of arguments")
 	ErrWrongTypeOfArgs   = errors.New("ERR wrong type of arguments")
+	ErrValueNotInteger   = errors.New("ERR value is not an integer or out of range")
 )
 
 func (e *Engine) execute(cmd *Command) (any, error) {
@@ -30,6 +31,10 @@ func (e *Engine) execute(cmd *Command) (any, error) {
 		return e.execExpire(cmd.Args...)
 	case "TTL":
 		return e.execTTL(cmd.Args...)
+	case "INCR":
+		return e.execIncr(cmd.Args...)
+	case "DECR":
+		return e.execDecr(cmd.Args...)
 	default:
 		return nil, errors.New("Err unsuported command")
 	}
@@ -147,7 +152,7 @@ func (e *Engine) execExists(args ...any) (int, error) {
 	return count, nil
 }
 
-func (e *Engine) execExpire(args ...any) (int, error) {
+func (e *Engine) execExpire(args ...any) (int64, error) {
 	if len(args) != 2 {
 		return 0, ErrWrongNumberOfArgs
 	}
@@ -167,7 +172,7 @@ func (e *Engine) execExpire(args ...any) (int, error) {
 	return 1, nil
 }
 
-func (e *Engine) execTTL(args ...any) (int, error) {
+func (e *Engine) execTTL(args ...any) (int64, error) {
 	if len(args) != 1 {
 		return 0, ErrWrongNumberOfArgs
 	}
@@ -182,5 +187,83 @@ func (e *Engine) execTTL(args ...any) (int, error) {
 	if item.expiry == -1 {
 		return -1, nil
 	}
-	return int(item.expiry-time.Now().UnixMilli()) / 1000, nil
+	return int64(item.expiry-time.Now().UnixMilli()) / 1000, nil
+}
+
+func (e *Engine) execIncr(args ...any) (string, error) {
+	if len(args) != 1 {
+		return "", ErrWrongNumberOfArgs
+	}
+
+	key, ok := args[0].(string)
+	if !ok {
+		return "", ErrWrongTypeOfArgs
+	}
+
+	item, ok := e.getItem(key)
+	if !ok {
+		item = &Item{
+			value:  "0",
+			expiry: -1,
+		}
+	}
+
+	valueStr, ok := item.value.(string)
+	if !ok {
+		return "", ErrValueNotInteger
+	}
+
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	if err != nil {
+		return "", ErrValueNotInteger
+	}
+
+	value++
+	valueStr = strconv.FormatInt(value, 10)
+
+	e.Storer.Put(key, &Item{
+		value:  valueStr,
+		expiry: item.expiry,
+	})
+
+	return valueStr, nil
+}
+
+func (e *Engine) execDecr(args ...any) (string, error) {
+	if len(args) != 1 {
+		return "", ErrWrongNumberOfArgs
+	}
+
+	key, ok := args[0].(string)
+	if !ok {
+		return "", ErrWrongTypeOfArgs
+	}
+
+	item, ok := e.getItem(key)
+	if !ok {
+		item = &Item{
+			value:  "0",
+			expiry: -1,
+		}
+	}
+
+	valueStr, ok := item.value.(string)
+	if !ok {
+		return "", ErrValueNotInteger
+	}
+
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	if err != nil {
+		return "", ErrValueNotInteger
+	}
+
+	value--
+	valueStr = strconv.FormatInt(value, 10)
+
+	e.Storer.Put(key, &Item{
+		value:  valueStr,
+		expiry: item.expiry,
+	})
+
+	return valueStr, nil
 }
