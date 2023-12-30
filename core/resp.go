@@ -108,6 +108,7 @@ func Serialize(input any) []byte {
 	case string:
 		builder.WriteString("+" + fmt.Sprintf("%v\r\n", input))
 	case int:
+	case int64:
 		builder.WriteString(":" + fmt.Sprintf("%v\r\n", input))
 	case error:
 		builder.WriteString("-" + fmt.Sprintf("%v\r\n", input))
