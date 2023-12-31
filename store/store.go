@@ -5,4 +5,5 @@ type Storer[T any] interface {
 	Get(string) T
 	Delete(string) bool
 	Exists(string) bool
+	GetAll() map[string]T
 }

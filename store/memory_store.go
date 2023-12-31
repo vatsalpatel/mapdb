@@ -28,3 +28,11 @@ func (ms *MemoryStore[T]) Exists(key string) bool {
 	_, ok := ms.store[key]
 	return ok
 }
+
+func (ms *MemoryStore[T]) GetAll() map[string]T {
+	copyMap := make(map[string]T)
+	for key, value := range ms.store {
+		copyMap[key] = value
+	}
+	return copyMap
+}

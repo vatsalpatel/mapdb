@@ -16,4 +16,8 @@ func TestThreadSafeMemoryStore(t *testing.T) {
 	ms.Delete("foo")
 	assert.Equal(t, ms.Get("foo"), nil)
 	assert.Equal(t, ms.Exists("foo"), false)
+
+	ms.Put("foo", "bar")
+	ms.Put("bar", "baz")
+	assert.Equal(t, ms.GetAll(), map[string]any{"foo": "bar", "bar": "baz"})
 }
