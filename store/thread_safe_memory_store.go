@@ -40,3 +40,13 @@ func (ms *ThreadSafeMemoryStore[T]) Exists(key string) bool {
 	_, ok := ms.store[key]
 	return ok
 }
+
+func (ms *ThreadSafeMemoryStore[T]) GetAll() map[string]T {
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+	copyMap := make(map[string]T)
+	for key, value := range ms.store {
+		copyMap[key] = value
+	}
+	return copyMap
+}

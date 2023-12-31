@@ -2,6 +2,9 @@ package core
 
 import (
 	"errors"
+	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +38,8 @@ func (e *Engine) execute(cmd *Command) (any, error) {
 		return e.execIncr(cmd.Args...)
 	case "DECR":
 		return e.execDecr(cmd.Args...)
+	case "SAVE":
+		return e.execSave(cmd.Args...)
 	default:
 		return nil, errors.New("Err unsuported command")
 	}
@@ -266,4 +271,38 @@ func (e *Engine) execDecr(args ...any) (string, error) {
 	})
 
 	return valueStr, nil
+}
+
+func (e *Engine) execSave(args ...any) (string, error) {
+	data := e.Storer.GetAll()
+
+	// writes data to file called "dump.rdb" in format:
+	// key1,value1,expiry1
+	// key2,value2,expiry2
+	// ...
+	// keyN,valueN,expiryN
+
+	bytes := []byte{}
+	for key, value := range data {
+		bytes = append(bytes, []byte(key)...)
+		bytes = append(bytes, []byte(",")...)
+		bytes = append(bytes, []byte(fmt.Sprintf("%v", value.value))...)
+		bytes = append(bytes, []byte(",")...)
+		bytes = append(bytes, []byte(fmt.Sprintf("%v", value.expiry))...)
+		bytes = append(bytes, []byte("\n")...)
+	}
+
+	file, err := os.Create("dump.rdb")
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Println("Cannot close file", err)
+		}
+	}()
+	if err != nil {
+		return "", err
+	}
+	file.Write(bytes)
+
+	return "OK", nil
 }
