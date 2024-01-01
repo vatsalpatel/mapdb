@@ -169,7 +169,11 @@ func (e *Engine) execExpire(args ...any) (int64, error) {
 	if exists == false {
 		return 0, nil
 	}
-	expiry, err := strconv.ParseInt(args[1].(string), 10, 64)
+	value, ok := args[1].(string)
+	if !ok {
+		return 0, ErrWrongTypeOfArgs
+	}
+	expiry, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return 0, ErrWrongTypeOfArgs
 	}
