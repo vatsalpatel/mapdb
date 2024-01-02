@@ -90,7 +90,9 @@ func (e *Engine) execSet(args ...any) (any, error) {
 		if err != nil {
 			return nil, ErrWrongTypeOfArgs
 		}
-		expiry = time.Now().UnixMilli() + expiry*1000
+		if expiry != -1 {
+			expiry = time.Now().UnixMilli() + expiry*1000
+		}
 	}
 
 	oldItem, exists := e.getItem(key)
