@@ -7,3 +7,9 @@ type Storer[T any] interface {
 	Exists(string) bool
 	GetAll() map[string]T
 }
+
+type PersistentStorer interface {
+	Append(string) error
+	ReadAll() ([]byte, error)
+	Clear() error
+}
