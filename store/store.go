@@ -9,7 +9,7 @@ type Storer[T any] interface {
 }
 
 type PersistentStorer interface {
-	Append(string) error
+	Write([]byte) error
 	ReadAll() ([]byte, error)
 	Clear() error
 }

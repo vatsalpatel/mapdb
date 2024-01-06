@@ -13,7 +13,7 @@ func TestFileStore(t *testing.T) {
 
 	// Test Append
 	data := []byte("test data")
-	err := fs.Append(data)
+	err := fs.Write(data)
 	if err != nil {
 		t.Fatalf("Append failed: %v", err)
 	}

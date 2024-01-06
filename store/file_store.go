@@ -12,12 +12,22 @@ type FileStore struct {
 }
 
 func NewFileStore(fileName string) *FileStore {
+	var err error
+	_, err = os.Stat(fileName)
+	if os.IsNotExist(err) {
+		_, err := os.Create(fileName)
+		if err != nil {
+			panic(err)
+		}
+	} else if err != nil {
+		panic(err)
+	}
 	return &FileStore{
 		fileName: fileName,
 	}
 }
 
-func (fs *FileStore) Append(data []byte) error {
+func (fs *FileStore) Write(data []byte) error {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
 	var err error
