@@ -9,11 +9,13 @@ import (
 
 type IEngine interface {
 	store.Storer[*Item]
+	store.PersistentStorer
 	Handle([]byte) []byte
 }
 
 type Engine struct {
 	store.Storer[*Item]
+	store.PersistentStorer
 }
 
 type Item struct {
@@ -21,9 +23,10 @@ type Item struct {
 	expiry int64
 }
 
-func NewEngine(storage store.Storer[*Item]) *Engine {
+func NewEngine(memoryStorage store.Storer[*Item], logStorage store.PersistentStorer) *Engine {
 	engine := &Engine{
-		storage,
+		memoryStorage,
+		logStorage,
 	}
 	err := engine.load()
 	if err != nil {

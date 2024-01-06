@@ -22,3 +22,6 @@ go.work
 
 # dump file
 dump.rdb
+
+# log file
+radish.log

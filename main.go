@@ -17,8 +17,9 @@ func main() {
 	var port int
 	setupFlags(&port)
 
-	storage := store.NewThreadSafeMemory[*core.Item]()
-	engine := core.NewEngine(storage)
+	memoryStorage := store.NewThreadSafeMemory[*core.Item]()
+	persistentStorage := store.NewFileStore("radish.log")
+	engine := core.NewEngine(memoryStorage, persistentStorage)
 	s := server.NewTCPAsyncServer(port, engine)
 	s.Start()
 	defer s.Stop()
