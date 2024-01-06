@@ -17,7 +17,10 @@ var (
 )
 
 func (e *Engine) execute(cmd *Command) (any, error) {
-	switch strings.ToUpper(cmd.Cmd) {
+	cmd.Cmd = strings.ToUpper(cmd.Cmd)
+	e.logCommand(cmd)
+
+	switch cmd.Cmd {
 	case "PING":
 		return e.execPing(cmd.Args...)
 	case "ECHO":
@@ -55,6 +58,21 @@ func (e *Engine) getItem(key string) (*Item, bool) {
 		return nil, false
 	}
 	return item, true
+}
+
+func (e *Engine) logCommand(cmd *Command) {
+	logLine := strings.Builder{}
+	logLine.Write([]byte(time.Now().UTC().Format(time.RFC3339)))
+	logLine.Write([]byte(" "))
+	logLine.Write([]byte(cmd.Cmd))
+	for _, arg := range cmd.Args {
+		logLine.Write([]byte(" "))
+		logLine.Write([]byte(fmt.Sprintf("%v", arg)))
+	}
+	err := e.PersistentStorer.Write([]byte(logLine.String()))
+	if err != nil {
+		log.Println("cannot write to log", err)
+	}
 }
 
 func (e *Engine) execPing(args ...any) (any, error) {

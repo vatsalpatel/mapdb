@@ -8,8 +8,14 @@ import (
 	"github.com/vatsalpatel/radish/store"
 )
 
+func getMockPersistentStore() store.PersistentStorer {
+	return &MockPersistentStore{}
+}
+
 func getMockEngine() *Engine {
-	return NewEngine(store.NewThreadSafeMemory[*Item]())
+	memoryStore := store.NewThreadSafeMemory[*Item]()
+	persistentStore := getMockPersistentStore()
+	return NewEngine(memoryStore, persistentStore)
 }
 
 func calcExpiey(expiry int64) int64 {
@@ -280,4 +286,18 @@ func TestDecr(t *testing.T) {
 			assert.Equal(t, tc.expected, result)
 		}
 	}
+}
+
+type MockPersistentStore struct{}
+
+func (m *MockPersistentStore) Write([]byte) error {
+	return nil
+}
+
+func (m *MockPersistentStore) ReadAll() ([]byte, error) {
+	return []byte{}, nil
+}
+
+func (m *MockPersistentStore) Clear() error {
+	return nil
 }
