@@ -18,7 +18,7 @@ func main() {
 	setupFlags(&port)
 
 	memoryStorage := store.NewThreadSafeMemory[*core.Item]()
-	persistentStorage := store.NewFileStore("radish.log")
+	persistentStorage := store.NewFileStore("dump.rdb")
 	engine := core.NewEngine(memoryStorage, persistentStorage)
 	s := server.NewTCPAsyncServer(port, engine)
 	s.Start()

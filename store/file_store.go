@@ -38,7 +38,6 @@ func (fs *FileStore) Write(data []byte) error {
 		}
 	}
 
-	data = append(data, "\r\n"...)
 	if _, err = fs.file.Write(data); err != nil {
 		return err
 	}
