@@ -23,7 +23,7 @@ func calcExpiey(expiry int64) int64 {
 		return -1
 	}
 
-	return time.Now().UTC().UnixMilli() + expiry*1000
+	return time.Now().UTC().Unix() + expiry
 }
 
 func TestPing(t *testing.T) {

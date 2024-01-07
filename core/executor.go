@@ -3,8 +3,6 @@ package core
 import (
 	"errors"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +16,6 @@ var (
 
 func (e *Engine) execute(cmd *Command) (any, error) {
 	cmd.Cmd = strings.ToUpper(cmd.Cmd)
-	e.logCommand(cmd)
 
 	switch cmd.Cmd {
 	case "PING":
@@ -53,26 +50,11 @@ func (e *Engine) getItem(key string) (*Item, bool) {
 	if item == nil {
 		return nil, false
 	}
-	if item.expiry > 0 && time.Now().UTC().UnixMilli() > item.expiry {
+	if item.expiry > 0 && time.Now().UTC().Unix() > item.expiry {
 		e.Storer.Delete(key)
 		return nil, false
 	}
 	return item, true
-}
-
-func (e *Engine) logCommand(cmd *Command) {
-	logLine := strings.Builder{}
-	logLine.Write([]byte(time.Now().UTC().Format(time.RFC3339)))
-	logLine.Write([]byte(" "))
-	logLine.Write([]byte(cmd.Cmd))
-	for _, arg := range cmd.Args {
-		logLine.Write([]byte(" "))
-		logLine.Write([]byte(fmt.Sprintf("%v", arg)))
-	}
-	err := e.PersistentStorer.Write([]byte(logLine.String()))
-	if err != nil {
-		log.Println("cannot write to log", err)
-	}
 }
 
 func (e *Engine) execPing(args ...any) (any, error) {
@@ -109,7 +91,7 @@ func (e *Engine) execSet(args ...any) (any, error) {
 			return nil, ErrWrongTypeOfArgs
 		}
 		if expiry != -1 {
-			expiry = time.Now().UnixMilli() + expiry*1000
+			expiry = time.Now().Unix() + expiry
 		}
 	}
 
@@ -197,7 +179,7 @@ func (e *Engine) execExpire(args ...any) (int64, error) {
 	if err != nil {
 		return 0, ErrWrongTypeOfArgs
 	}
-	item.expiry = time.Now().UnixMilli() + expiry*1000
+	item.expiry = time.Now().Unix() + expiry
 	return 1, nil
 }
 
@@ -216,7 +198,7 @@ func (e *Engine) execTTL(args ...any) (int64, error) {
 	if item.expiry == -1 {
 		return -1, nil
 	}
-	return int64(item.expiry-time.Now().UnixMilli()) / 1000, nil
+	return int64(item.expiry - time.Now().Unix()), nil
 }
 
 func (e *Engine) execIncr(args ...any) (string, error) {
@@ -298,35 +280,33 @@ func (e *Engine) execDecr(args ...any) (string, error) {
 }
 
 func (e *Engine) execSave(args ...any) (string, error) {
-	data := e.Storer.GetAll()
-
-	// writes data to file called "dump.rdb" in format:
+	// writes data to disk for persistence:
 	// key1,value1,expiry1
 	// key2,value2,expiry2
 	// ...
 	// keyN,valueN,expiryN
 
-	bytes := []byte{}
+	data := e.Storer.GetAll()
+	var builder strings.Builder
 	for key, value := range data {
-		bytes = append(bytes, []byte(key)...)
-		bytes = append(bytes, []byte(",")...)
-		bytes = append(bytes, []byte(fmt.Sprintf("%v", value.value))...)
-		bytes = append(bytes, []byte(",")...)
-		bytes = append(bytes, []byte(fmt.Sprintf("%v", value.expiry))...)
-		bytes = append(bytes, []byte("\n")...)
+		builder.WriteString(key)
+		builder.WriteString(",")
+		builder.WriteString(fmt.Sprintf("%v", value.value))
+		builder.WriteString(",")
+		expiry := value.expiry - time.Now().UTC().Unix()
+		fmt.Println(expiry, value.expiry, time.Now().UTC().Unix())
+		builder.WriteString(fmt.Sprintf("%v", expiry))
+		builder.WriteString("\r\n")
 	}
+	bytes := []byte(builder.String())
 
-	file, err := os.Create("dump.rdb")
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Println("Cannot close file", err)
-		}
-	}()
+	err := e.PersistentStorer.Clear()
 	if err != nil {
-		return "", err
+		return "-ERR error saving", err
 	}
-	file.Write(bytes)
-
+	err = e.PersistentStorer.Write(bytes)
+	if err != nil {
+		return "-ERR error saving", err
+	}
 	return "OK", nil
 }

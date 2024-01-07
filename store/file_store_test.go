@@ -20,9 +20,8 @@ func TestFileStore(t *testing.T) {
 
 	// Test ReadAll
 	result, err := fs.ReadAll()
-	expected := append(data, '\r', '\n')
 	assert.NoError(t, err)
-	assert.Equal(t, result, expected)
+	assert.Equal(t, result, data)
 
 	// Test Clear
 	err = fs.Clear()

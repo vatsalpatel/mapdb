@@ -2,7 +2,6 @@ package core
 
 import (
 	"log"
-	"os"
 
 	"github.com/vatsalpatel/radish/store"
 )
@@ -52,7 +51,7 @@ func (e *Engine) Handle(input []byte) []byte {
 }
 
 func (e *Engine) load() error {
-	data, err := os.ReadFile("dump.rdb")
+	data, err := e.PersistentStorer.ReadAll()
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,7 @@ func (e *Engine) load() error {
 		switch {
 		case data[i] == ',':
 			current++
-		case data[i] == '\n':
+		case data[i] == '\r':
 			_, err = e.execSet(string(key), string(value), string(expiry))
 			if err != nil {
 				log.Println(err)
@@ -72,6 +71,8 @@ func (e *Engine) load() error {
 			}
 			key, value, expiry = []byte{}, []byte{}, []byte{}
 			current = 0
+		case data[i] == '\n':
+			continue
 		default:
 			switch current {
 			case 0:
