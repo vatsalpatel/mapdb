@@ -45,6 +45,7 @@ func (e *Engine) Handle(input []byte) []byte {
 	}
 	result, err := e.execute(command)
 	if err != nil {
+		log.Println(command, err)
 		return Serialize(err)
 	}
 	return Serialize(result)

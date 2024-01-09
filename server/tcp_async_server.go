@@ -8,23 +8,23 @@ import (
 	"github.com/vatsalpatel/radish/core"
 )
 
-type TCPSyncServer struct {
+type TCPAsyncServer struct {
 	core.IEngine
 	Port     int
 	listener net.Listener
 }
 
-func NewTCPAsyncServer(port int, engine core.IEngine) *TCPSyncServer {
-	return &TCPSyncServer{
+func NewTCPAsyncServer(port int, engine core.IEngine) *TCPAsyncServer {
+	return &TCPAsyncServer{
 		IEngine: engine,
 		Port:    port,
 	}
 }
 
-func (s *TCPSyncServer) Start() error {
+func (s *TCPAsyncServer) Start() error {
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
-	log.Println("listening on port", s.Port)
+	log.Println("async tcp server started on port", s.Port)
 	if err != nil {
 		return err
 	}
@@ -40,11 +40,11 @@ func (s *TCPSyncServer) Start() error {
 	}
 }
 
-func (s *TCPSyncServer) Stop() error {
+func (s *TCPAsyncServer) Stop() error {
 	return s.listener.Close()
 }
 
-func (s *TCPSyncServer) handle(conn net.Conn) {
+func (s *TCPAsyncServer) handle(conn net.Conn) {
 	buf := make([]byte, 1024)
 	for {
 		_, err := conn.Read(buf[:])
