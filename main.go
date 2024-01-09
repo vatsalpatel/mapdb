@@ -8,19 +8,31 @@ import (
 	"github.com/vatsalpatel/radish/store"
 )
 
-func setupFlags(port *int) {
+func setupFlags(port *int, serverType *int) {
 	flag.IntVar(port, "port", 6379, "Port to listen on")
+	flag.IntVar(serverType, "server-type", 0, "Server type to run")
 	flag.Parse()
 }
 
 func main() {
-	var port int
-	setupFlags(&port)
+	var port, serverType int
+	setupFlags(&port, &serverType)
 
-	memoryStorage := store.NewThreadSafeMemory[*core.Item]()
 	persistentStorage := store.NewFileStore("dump.rdb")
-	engine := core.NewEngine(memoryStorage, persistentStorage)
-	s := server.NewTCPAsyncServer(port, engine)
+
+	var s server.IServer
+	switch serverType {
+	case 0:
+		engine := core.NewEngine(store.NewMemory[*core.Item](), persistentStorage)
+		s = server.NewTCPSyncServer(port, engine)
+	case 1:
+		engine := core.NewEngine(store.NewMemory[*core.Item](), persistentStorage)
+		s = server.NewTCPSingleThreadedServer(port, engine)
+	case 2:
+		engine := core.NewEngine(store.NewThreadSafeMemory[*core.Item](), persistentStorage)
+		s = server.NewTCPAsyncServer(port, engine)
+	}
+
 	s.Start()
 	defer s.Stop()
 }
