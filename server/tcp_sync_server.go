@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"os"
 	"sync"
 	"time"
 
@@ -18,6 +17,7 @@ type TCPSyncServer struct {
 	listener      net.Listener
 	connections   map[net.Addr]net.Conn
 	connectionsMu sync.RWMutex
+	shutdown      chan struct{}
 }
 
 func NewTCPSyncServer(port int, engine core.IEngine) *TCPSyncServer {
@@ -29,6 +29,7 @@ func NewTCPSyncServer(port int, engine core.IEngine) *TCPSyncServer {
 
 func (s *TCPSyncServer) Start() error {
 	s.connections = make(map[net.Addr]net.Conn)
+	s.shutdown = make(chan struct{})
 
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
@@ -36,14 +37,12 @@ func (s *TCPSyncServer) Start() error {
 	if err != nil {
 		return err
 	}
-	defer s.Stop()
 
 	go s.worker()
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			continue
 		}
 		s.connectionsMu.Lock()
 		s.connections[conn.RemoteAddr()] = conn
@@ -52,7 +51,22 @@ func (s *TCPSyncServer) Start() error {
 }
 
 func (s *TCPSyncServer) Stop() error {
-	return s.listener.Close()
+	s.connectionsMu.Lock()
+	for addr, conn := range s.connections {
+		conn.Close()
+		delete(s.connections, addr)
+	}
+	s.connectionsMu.Unlock()
+
+	s.shutdown <- struct{}{}
+	close(s.shutdown)
+
+	err := s.listener.Close()
+	if err != nil {
+		return err
+	}
+	<-time.After(time.Second)
+	return s.IEngine.Shutdown()
 }
 
 func (s *TCPSyncServer) handle(conn net.Conn) error {
@@ -81,14 +95,19 @@ func (s *TCPSyncServer) handle(conn net.Conn) error {
 
 func (s *TCPSyncServer) worker() {
 	for {
-		s.connectionsMu.RLock()
-		for _, conn := range s.connections {
-			err := s.handle(conn)
-			if err != nil {
-				conn.Close()
-				delete(s.connections, conn.RemoteAddr())
+		select {
+		case <-s.shutdown:
+			return
+		default:
+			s.connectionsMu.RLock()
+			for _, conn := range s.connections {
+				err := s.handle(conn)
+				if err != nil {
+					conn.Close()
+					delete(s.connections, conn.RemoteAddr())
+				}
 			}
+			s.connectionsMu.RUnlock()
 		}
-		s.connectionsMu.RUnlock()
 	}
 }

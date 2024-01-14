@@ -2,6 +2,10 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/vatsalpatel/mapdb/core"
 	"github.com/vatsalpatel/mapdb/server"
@@ -33,6 +37,18 @@ func main() {
 		s = server.NewTCPSyncServer(port, engine)
 	}
 
-	s.Start()
-	defer s.Stop()
+	go func() {
+		if err := s.Start(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	<-sigChan
+	log.Println("Shutting down...")
+	if err := s.Stop(); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Shutdown complete")
 }

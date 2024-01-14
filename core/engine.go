@@ -10,6 +10,7 @@ type IEngine interface {
 	store.Storer[*Item]
 	store.PersistentStorer
 	Handle([]byte) []byte
+	Shutdown() error
 }
 
 type Engine struct {
@@ -84,6 +85,13 @@ func (e *Engine) load() error {
 				expiry = append(expiry, data[i])
 			}
 		}
+	}
+	return nil
+}
+
+func (e *Engine) Shutdown() error {
+	if _, err := e.execSave(); err != nil {
+		return err
 	}
 	return nil
 }

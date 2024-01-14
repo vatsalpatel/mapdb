@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
+	"time"
 
 	"github.com/vatsalpatel/mapdb/core"
 )
@@ -14,6 +14,7 @@ type TCPSingleThreadedServer struct {
 	Port     int
 	listener net.Listener
 	channel  chan channelItem
+	shutdown chan struct{}
 }
 
 type channelItem struct {
@@ -30,27 +31,34 @@ func NewTCPSingleThreadedServer(port int, engine core.IEngine) *TCPSingleThreade
 
 func (s *TCPSingleThreadedServer) Start() error {
 	s.channel = make(chan channelItem, 1000)
+	s.shutdown = make(chan struct{})
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
 	log.Println("single threaded tcp server started on port", s.Port)
 	if err != nil {
 		return err
 	}
-	defer s.Stop()
 
 	go s.worker()
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			continue
 		}
 		go waitAndRead(s.channel, conn)
 	}
 }
 
 func (s *TCPSingleThreadedServer) Stop() error {
-	return s.listener.Close()
+	s.shutdown <- struct{}{}
+	close(s.channel)
+
+	err := s.listener.Close()
+	if err != nil {
+		return err
+	}
+	<-time.After(time.Second)
+	return s.IEngine.Shutdown()
 }
 
 func (s *TCPSingleThreadedServer) handle(item channelItem) {
@@ -63,8 +71,13 @@ func (s *TCPSingleThreadedServer) handle(item channelItem) {
 }
 
 func (s *TCPSingleThreadedServer) worker() {
-	for item := range s.channel {
-		s.handle(item)
+	for {
+		select {
+		case <-s.shutdown:
+			return
+		case item := <-s.channel:
+			s.handle(item)
+		}
 	}
 }
 
