@@ -293,8 +293,10 @@ func (e *Engine) execSave(args ...any) (string, error) {
 		builder.WriteString(",")
 		builder.WriteString(fmt.Sprintf("%v", value.value))
 		builder.WriteString(",")
-		expiry := value.expiry - time.Now().UTC().Unix()
-		fmt.Println(expiry, value.expiry, time.Now().UTC().Unix())
+		expiry := value.expiry
+		if value.expiry != -1 {
+			expiry = value.expiry - time.Now().UTC().Unix()
+		}
 		builder.WriteString(fmt.Sprintf("%v", expiry))
 		builder.WriteString("\r\n")
 	}

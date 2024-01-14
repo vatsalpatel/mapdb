@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/vatsalpatel/mapdb/core"
 )
@@ -31,7 +32,6 @@ func (s *TCPAsyncServer) Start() error {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			log.Printf("Error accepting connection: %v", err)
 			continue
 		}
 		go s.handle(conn)
@@ -39,7 +39,12 @@ func (s *TCPAsyncServer) Start() error {
 }
 
 func (s *TCPAsyncServer) Stop() error {
-	return s.listener.Close()
+	err := s.listener.Close()
+	if err != nil {
+		return err
+	}
+	<-time.After(time.Second)
+	return s.IEngine.Shutdown()
 }
 
 func (s *TCPAsyncServer) handle(conn net.Conn) {
