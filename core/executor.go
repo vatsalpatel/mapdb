@@ -41,7 +41,7 @@ func (e *Engine) execute(cmd *Command) (any, error) {
 	case "SAVE":
 		return e.execSave(cmd.Args...)
 	default:
-		return nil, errors.New("Err unsuported command")
+		return nil, errors.New("ERR unsuported command")
 	}
 }
 
@@ -118,7 +118,7 @@ func (e *Engine) execGet(args ...any) (any, error) {
 		return nil, ErrWrongTypeOfArgs
 	}
 	item, exists := e.getItem(key)
-	if exists == false {
+	if !exists {
 		return "<nil>", nil
 	}
 	return item.value, nil
@@ -168,7 +168,7 @@ func (e *Engine) execExpire(args ...any) (int64, error) {
 		return 0, ErrWrongTypeOfArgs
 	}
 	item, exists := e.getItem(key)
-	if exists == false {
+	if !exists {
 		return 0, nil
 	}
 	value, ok := args[1].(string)
@@ -192,7 +192,7 @@ func (e *Engine) execTTL(args ...any) (int64, error) {
 		return 0, ErrWrongTypeOfArgs
 	}
 	item, exists := e.getItem(key)
-	if exists == false {
+	if !exists {
 		return -2, nil
 	}
 	if item.expiry == -1 {
