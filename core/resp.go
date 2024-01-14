@@ -101,21 +101,18 @@ func readError(input []byte) (string, int, error) {
 
 func Serialize(input any) []byte {
 	var builder strings.Builder
-	switch input.(type) {
+	switch input := input.(type) {
 	case []byte:
-		data := input.([]byte)
-		builder.WriteString("$" + fmt.Sprintf("%v\r\n", len(data)) + string(data) + "\r\n")
+		builder.WriteString("$" + fmt.Sprintf("%v\r\n", len(input)) + string(input) + "\r\n")
 	case string:
 		builder.WriteString("+" + fmt.Sprintf("%v\r\n", input))
-	case int:
-	case int64:
+	case int64, int32, int16, int8, int:
 		builder.WriteString(":" + fmt.Sprintf("%v\r\n", input))
 	case error:
 		builder.WriteString("-" + fmt.Sprintf("%v\r\n", input))
 	case []any:
-		data := input.([]any)
-		builder.WriteString("*" + fmt.Sprintf("%v\r\n", len(data)))
-		for _, item := range data {
+		builder.WriteString("*" + fmt.Sprintf("%v\r\n", len(input)))
+		for _, item := range input {
 			builder.Write(Serialize(item))
 		}
 	default:
