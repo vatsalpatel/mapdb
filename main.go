@@ -23,14 +23,14 @@ func main() {
 	var s server.IServer
 	switch serverType {
 	case 0:
-		engine := core.NewEngine(store.NewMemory[*core.Item](), persistentStorage)
-		s = server.NewTCPSyncServer(port, engine)
+		engine := core.NewEngine(store.NewThreadSafeMemory[*core.Item](), persistentStorage)
+		s = server.NewTCPAsyncServer(port, engine)
 	case 1:
 		engine := core.NewEngine(store.NewMemory[*core.Item](), persistentStorage)
 		s = server.NewTCPSingleThreadedServer(port, engine)
 	case 2:
-		engine := core.NewEngine(store.NewThreadSafeMemory[*core.Item](), persistentStorage)
-		s = server.NewTCPAsyncServer(port, engine)
+		engine := core.NewEngine(store.NewMemory[*core.Item](), persistentStorage)
+		s = server.NewTCPSyncServer(port, engine)
 	}
 
 	s.Start()

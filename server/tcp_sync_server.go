@@ -32,7 +32,7 @@ func (s *TCPSyncServer) Start() error {
 
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
-	log.Println("sync tco server started on port", s.Port)
+	log.Println("sync tcp server started on port", s.Port)
 	if err != nil {
 		return err
 	}

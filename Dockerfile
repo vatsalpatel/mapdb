@@ -4,5 +4,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN go build -o mapdb .
-EXPOSE 6379
-CMD ["./mapdb"]
+ENV PORT 6379
+ENV SERVER_TYPE 0
+CMD ./mapdb --port $PORT --server-type $SERVER_TYPE
