@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/vatsalpatel/radish/core"
+	"github.com/vatsalpatel/mapdb/core"
 )
 
 type TCPSingleThreadedServer struct {

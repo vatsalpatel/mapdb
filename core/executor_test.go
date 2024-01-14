@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vatsalpatel/radish/store"
+	"github.com/vatsalpatel/mapdb/store"
 )
 
 func getMockPersistentStore() store.PersistentStorer {

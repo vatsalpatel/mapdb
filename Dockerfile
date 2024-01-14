@@ -3,6 +3,6 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o radish .
+RUN go build -o mapdb .
 EXPOSE 6379
-CMD ["./radish"]
+CMD ["./mapdb"]

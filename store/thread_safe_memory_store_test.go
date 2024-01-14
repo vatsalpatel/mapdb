@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vatsalpatel/radish/store"
+	"github.com/vatsalpatel/mapdb/store"
 )
 
 func TestThreadSafeMemoryStore(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/vatsalpatel/radish/core"
+	"github.com/vatsalpatel/mapdb/core"
 )
 
 type TCPAsyncServer struct {
@@ -28,10 +28,8 @@ func (s *TCPAsyncServer) Start() error {
 	if err != nil {
 		return err
 	}
-	defer s.Stop()
 	for {
 		conn, err := s.listener.Accept()
-		defer conn.Close()
 		if err != nil {
 			log.Printf("Error accepting connection: %v", err)
 			continue

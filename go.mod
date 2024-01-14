@@ -1,4 +1,4 @@
-module github.com/vatsalpatel/radish
+module github.com/vatsalpatel/mapdb
 
 go 1.21.4
 
