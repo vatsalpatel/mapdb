@@ -52,7 +52,7 @@ MapDB can be run either directly from the command line or inside a Docker contai
 After building the application as described in the Installation section, you can run MapDB with the following command:
 
 ```bash
-./main -port 6380 -server-type 1
+./mapdb -port 6380 -server-type 1
 ```
 ### Docker Usage
 
