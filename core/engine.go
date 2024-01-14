@@ -3,7 +3,7 @@ package core
 import (
 	"log"
 
-	"github.com/vatsalpatel/radish/store"
+	"github.com/vatsalpatel/mapdb/store"
 )
 
 type IEngine interface {

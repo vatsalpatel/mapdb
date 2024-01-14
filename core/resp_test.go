@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vatsalpatel/radish/core"
+	"github.com/vatsalpatel/mapdb/core"
 )
 
 func TestSimleString(t *testing.T) {

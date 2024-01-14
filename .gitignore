@@ -24,4 +24,4 @@ go.work
 dump.rdb
 
 # log file
-radish.log
+mapdb.log

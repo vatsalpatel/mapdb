@@ -1,6 +1,6 @@
 package server
 
-import "github.com/vatsalpatel/radish/core"
+import "github.com/vatsalpatel/mapdb/core"
 
 type IServer interface {
 	core.IEngine

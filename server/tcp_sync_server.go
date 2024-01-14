@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vatsalpatel/radish/core"
+	"github.com/vatsalpatel/mapdb/core"
 )
 
 type TCPSyncServer struct {

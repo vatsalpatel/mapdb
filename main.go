@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 
-	"github.com/vatsalpatel/radish/core"
-	"github.com/vatsalpatel/radish/server"
-	"github.com/vatsalpatel/radish/store"
+	"github.com/vatsalpatel/mapdb/core"
+	"github.com/vatsalpatel/mapdb/server"
+	"github.com/vatsalpatel/mapdb/store"
 )
 
 func setupFlags(port *int, serverType *int) {
